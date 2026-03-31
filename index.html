@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yuchen Liu — Lead Product Designer · 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   VIEWPORT BASE
+   ============================================= */
+html, body { height: 100%; overflow: hidden; }
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+.slide {
+  width: 100vw; height: 100vh; height: 100dvh;
+  overflow: hidden; scroll-snap-align: start;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+@media (max-height: 700px) {
+  :root {
+    --pad-v: clamp(1rem,2.2vh,1.8rem);
+    --title: clamp(2.5rem,5.5vw,4.5rem);
+    --h2: clamp(1.6rem,3vw,2.6rem);
+    --body: clamp(0.78rem,1vw,0.9rem);
+  }
+}
+@media (max-height: 600px) { #dot-nav { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.2s !important; }
+  html { scroll-behavior: auto; }
+}
+
+/* =============================================
+   DESIGN SYSTEM TOKENS
+   ============================================= */
+:root {
+  --bg:       #FFFFFF;
+  --bg-sub:   #F7F7F5;
+  --bg-dark:  #F0F0EE;
+  --ink:      #0A0A0A;
+  --mid:      #666666;
+  --faint:    #E4E4E4;
+  --accent:   #0034D4;
+  --accent-l: rgba(0,52,212,.07);
+  --ease:     cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Typography scale — larger base */
+  --pad-h:  clamp(3rem, 6.5vw, 7.5rem);
+  --pad-v:  clamp(2rem, 4vh, 4rem);
+  --title:  clamp(3.5rem, 7.5vw, 8rem);
+  --h2:     clamp(2.2rem, 4.2vw, 4rem);
+  --h3:     clamp(1.4rem, 2.2vw, 2rem);
+  --body:   clamp(0.9rem, 1.1vw, 1.05rem);
+  --body-sm:clamp(0.8rem, 0.95vw, 0.92rem);
+  --mono:   clamp(0.62rem, 0.8vw, 0.72rem);
+  --label:  clamp(0.68rem, 0.85vw, 0.78rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); font-family: 'Inter', sans-serif; cursor: none; }
+
+/* =============================================
+   CURSOR
+   ============================================= */
+#cursor {
+  position: fixed; top: 0; left: 0; width: 9px; height: 9px;
+  background: var(--accent); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: width .18s var(--ease), height .18s var(--ease);
+}
+#cursor.big { width: 32px; height: 32px; background: rgba(0,52,212,.1); }
+
+/* =============================================
+   PROGRESS BAR
+   ============================================= */
+#bar {
+  position: fixed; top: 0; left: 0; height: 2px;
+  background: var(--accent); z-index: 300;
+  transition: width .5s var(--ease);
+}
+
+/* =============================================
+   DOT NAV
+   ============================================= */
+#dot-nav {
+  position: fixed; right: 1.6rem; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column;
+  gap: .55rem; z-index: 200;
+}
+.dot-wrap {
+  position: relative; display: flex;
+  align-items: center; justify-content: flex-end; cursor: none;
+}
+.dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: transparent; border: 1px solid #BBBBBB;
+  transition: all .25s var(--ease); flex-shrink: 0;
+}
+.dot-wrap.active .dot { background: var(--accent); border-color: var(--accent); transform: scale(1.5); }
+.dot-wrap:hover .dot  { background: var(--accent); border-color: var(--accent); }
+.dot-label {
+  position: absolute; right: 1.2rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(.5rem,.64vw,.6rem); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink); background: #fff;
+  border: 1px solid var(--faint); padding: 3px 8px;
+  white-space: nowrap; opacity: 0; transform: translateX(5px);
+  transition: opacity .2s, transform .2s; pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+}
+.dot-wrap:hover .dot-label { opacity: 1; transform: translateX(0); }
+.dot-gap { height: .3rem; }
+
+/* =============================================
+   REVEAL
+   ============================================= */
+.r {
+  opacity: 0; transform: translateY(18px);
+  transition: opacity .65s var(--ease), transform .65s var(--ease);
+}
+.slide.visible .r { opacity: 1; transform: translateY(0); }
+.slide.visible .r:nth-child(1)  { transition-delay: .05s; }
+.slide.visible .r:nth-child(2)  { transition-delay: .12s; }
+.slide.visible .r:nth-child(3)  { transition-delay: .19s; }
+.slide.visible .r:nth-child(4)  { transition-delay: .26s; }
+.slide.visible .r:nth-child(5)  { transition-delay: .33s; }
+.slide.visible .r:nth-child(6)  { transition-delay: .40s; }
+.slide.visible .r:nth-child(7)  { transition-delay: .47s; }
+.slide.visible .r:nth-child(8)  { transition-delay: .54s; }
+
+/* =============================================
+   SHARED LAYOUT
+   ============================================= */
+.si {
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  height: 100%; padding: var(--pad-v) var(--pad-h);
+}
+.topbar { display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; }
+
+/* Eyebrow */
+.ey { display: flex; align-items: center; gap: .65rem; }
+.ey-dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
+.ey-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--accent);
+}
+/* Slide number — 01/23 style */
+.snum {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: var(--mono); letter-spacing: .1em; color: var(--mid); opacity: .4;
+}
+
+.rule { width: 100%; height: 1px; background: var(--faint); flex-shrink: 0; }
+.mono-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: var(--mono);
+  letter-spacing: .16em; text-transform: uppercase; color: var(--mid);
+}
+
+/* Tags */
+.tag-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+.tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(.58rem,.76vw,.68rem); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--mid); background: var(--bg-sub);
+  border: 1px solid var(--faint); padding: 5px 13px; border-radius: 2px;
+  cursor: default; transition: background .2s, color .2s, border-color .2s;
+}
+.tag:hover { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
+
+/* Metrics */
+.metrics { display: flex; border: 1px solid var(--faint); max-width: max-content; }
+.metric {
+  padding: clamp(.7rem,1.3vh,1.1rem) clamp(.9rem,1.8vw,1.8rem);
+  border-right: 1px solid var(--faint); cursor: default; transition: background .2s;
+}
+.metric:last-child { border-right: none; }
+.metric:hover { background: var(--accent-l); }
+.metric-num {
+  font-family: 'Familjen Grotesk', sans-serif; font-weight: 700;
+  font-size: clamp(1.6rem,2.8vw,2.5rem); letter-spacing: -.03em; color: var(--accent); line-height: 1;
+}
+.metric-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(.52rem,.65vw,.6rem); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--mid); margin-top: .25rem;
+}
+
+/* Trust grid */
+.trust-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 1px; background: var(--faint);
+}
+.trust-cell {
+  background: var(--bg); padding: clamp(.85rem,1.6vh,1.3rem) clamp(.85rem,1.6vw,1.5rem);
+  cursor: default; transition: background .25s;
+}
+.trust-cell:hover { background: var(--accent); }
+.trust-cell:hover .tc-h, .trust-cell:hover .tc-b { color: white; }
+.tc-h {
+  font-family: 'Familjen Grotesk', sans-serif; font-weight: 600;
+  font-size: clamp(.8rem,1vw,.92rem); color: var(--ink); margin-bottom: .22rem; transition: color .25s;
+}
+.tc-b {
+  font-family: 'Inter', sans-serif; font-weight: 300;
+  font-size: clamp(.7rem,.88vw,.8rem); color: var(--mid); line-height: 1.4; transition: color .25s;
+}
+
+/* Two-col */
+.two-col { flex: 1; display: grid; gap: clamp(2rem,4vw,5rem); align-items: center; overflow: hidden; }
+.two-col.l1r2 { grid-template-columns: 1fr 1.35fr; }
+.two-col.l2r1 { grid-template-columns: 1.35fr 1fr; }
+.two-col.half { grid-template-columns: 1fr 1fr; }
+.col { display: flex; flex-direction: column; gap: clamp(.9rem,1.8vh,1.6rem); overflow: hidden; }
+.col img {
+  width: 100%; height: auto;
+  max-height: min(48vh,390px); object-fit: cover;
+  border-radius: 8px; box-shadow: 0 6px 32px rgba(0,0,0,.12);
+}
+
+/* Section title */
+.sec-title {
+  font-family: 'Familjen Grotesk', sans-serif; font-weight: 700;
+  font-size: var(--h2); line-height: .97; letter-spacing: -.025em; color: var(--ink);
+}
+.sec-title .ac  { color: var(--accent); font-weight: 500; }
+.sec-title .dim { color: var(--mid); font-weight: 400; }
+
+/* Body text */
+.body-text {
+  font-family: 'Inter', sans-serif; font-weight: 300;
+  font-size: var(--body); line-height: 1.8; color: var(--mid);
+}
+
+/* KW list */
+.kw-list { display: flex; flex-direction: column; gap: 0; }
+.kw-item {
+  display: flex; align-items: baseline; gap: .75rem;
+  padding: clamp(.45rem,.9vh,.75rem) 0;
+  border-bottom: 1px solid var(--faint);
+  font-family: 'Inter', sans-serif; font-weight: 300;
+  font-size: var(--body); color: var(--mid);
+  transition: color .2s, padding-left .2s; cursor: default;
+}
+.kw-item:first-child { border-top: 1px solid var(--faint); }
+.kw-item:hover { color: var(--ink); padding-left: .35rem; }
+.kw-item b { font-weight: 500; color: var(--ink); }
+.kw-item::before { content: ''; width: 3px; height: 3px; background: var(--accent); border-radius: 50%; flex-shrink: 0; margin-top:.4em; }
+
+/* Quote block */
+.quote-block {
+  font-family: 'Inter', sans-serif; font-weight: 400;
+  font-size: clamp(1rem,1.5vw,1.3rem); line-height: 1.65; color: var(--ink);
+  padding: clamp(.9rem,1.6vh,1.3rem) clamp(1rem,2vw,1.8rem);
+  border-left: 2px solid var(--accent); background: var(--accent-l);
+}
+
+/* Phase strip */
+.phase-strip { display: grid; gap: 1px; background: var(--faint); }
+.phase {
+  background: var(--bg); padding: clamp(.85rem,1.6vh,1.3rem) clamp(.85rem,1.6vw,1.5rem);
+  cursor: default; transition: background .25s;
+}
+.phase:hover { background: var(--ink); }
+.phase:hover .ph-n,.phase:hover .ph-t,.phase:hover .ph-d { color: white; }
+.ph-n { font-family:'IBM Plex Mono',monospace; font-size:var(--mono); letter-spacing:.15em; color:var(--accent); margin-bottom:.35rem; transition:color .25s; }
+.ph-t { font-family:'Familjen Grotesk',sans-serif; font-weight:600; font-size:clamp(.88rem,1.1vw,1rem); color:var(--ink); margin-bottom:.2rem; transition:color .25s; }
+.ph-d { font-family:'Inter',sans-serif; font-weight:300; font-size:var(--body-sm); color:var(--mid); line-height:1.45; transition:color .25s; }
+
+/* Insight box */
+.insight {
+  background: var(--bg-sub); border: 1px solid var(--faint);
+  padding: clamp(.85rem,1.6vh,1.3rem) clamp(1rem,2vw,1.8rem); border-radius: 3px;
+}
+.insight-label {
+  font-family:'IBM Plex Mono',monospace; font-size:var(--mono);
+  letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:.4rem;
+}
+.insight-text {
+  font-family:'Familjen Grotesk',sans-serif; font-weight:500;
+  font-size:clamp(.88rem,1.15vw,1.05rem); color:var(--ink); line-height:1.5;
+}
+
+/* Exp rows */
+.exp-row {
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: baseline; gap: 2rem;
+  padding: clamp(.6rem,1.2vh,1rem) 0; border-bottom: 1px solid var(--faint);
+  transition: padding-left .2s; cursor: default;
+}
+.exp-row:first-child { border-top: 1px solid var(--faint); }
+.exp-row:hover { background: var(--accent-l); padding-left: .5rem; }
+.exp-co { font-family:'Familjen Grotesk',sans-serif; font-weight:600; font-size:clamp(.9rem,1.1vw,1.05rem); color:var(--ink); }
+.exp-role { font-family:'Inter',sans-serif; font-weight:300; font-size:var(--body-sm); color:var(--mid); margin-top:.12rem; }
+.exp-kpi { font-family:'IBM Plex Mono',monospace; font-size:var(--mono); letter-spacing:.1em; color:var(--accent); white-space:nowrap; }
+
+/* Big stat */
+.big-stat-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--faint); flex:1; max-height:min(45vh,360px); }
+.big-stat { background:var(--bg); display:flex; flex-direction:column; justify-content:center; padding:clamp(1rem,2vw,2.5rem); transition:background .25s; cursor:default; }
+.big-stat:hover { background:var(--accent); }
+.big-stat:hover .bs-num,.big-stat:hover .bs-label { color:white; }
+.bs-num { font-family:'Familjen Grotesk',sans-serif; font-weight:700; font-size:clamp(2.2rem,5.5vw,5rem); letter-spacing:-.04em; color:var(--accent); line-height:1; transition:color .25s; }
+.bs-label { font-family:'IBM Plex Mono',monospace; font-size:var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--mid); margin-top:.4rem; transition:color .25s; line-height:1.4; }
+
+/* ─── DARK SLIDE shared ─── */
+.dark-slide { background: var(--ink); }
+.dark-slide .ey-dot    { background: rgba(255,255,255,.4); }
+.dark-slide .ey-text   { color: rgba(255,255,255,.55); }
+.dark-slide .snum      { color: rgba(255,255,255,.3); opacity:1; }
+.dark-slide .sec-title { color: white; }
+.dark-slide .sec-title .ac { color: var(--accent); }
+.dark-slide .mono-label    { color: rgba(255,255,255,.45); }
+.dark-slide .body-text     { color: rgba(255,255,255,.6); }
+.dark-slide .rule          { background: rgba(255,255,255,.1); }
+.dark-slide .kw-item       { color: rgba(255,255,255,.6); border-color: rgba(255,255,255,.1); }
+.dark-slide .kw-item b     { color: white; }
+.dark-slide .kw-item::before { background: var(--accent); }
+
+/* contact */
+.contact-row { display:flex; gap:2.5rem; align-items:center; }
+.contact-item { font-family:'Inter',sans-serif; font-weight:300; font-size:var(--body); color:rgba(255,255,255,.45); line-height:2; }
+.contact-item b { font-weight:400; color:rgba(255,255,255,.8); }
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="bar"></div>
+
+<!-- DOT NAV -->
+<nav id="dot-nav">
+  <div class="dot-wrap active" data-idx="0"><span class="dot-label">Opening</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="1"><span class="dot-label">Business Impact</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="2"><span class="dot-label">What Makes Me Different</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="3"><span class="dot-label">Experience</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="4"><span class="dot-label">Design Philosophy</span><div class="dot"></div></div>
+  <div class="dot-gap"></div>
+  <div class="dot-wrap" data-idx="5"><span class="dot-label">CS1 — Intro</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="6"><span class="dot-label">Context</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="7"><span class="dot-label">First Attempt</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="8"><span class="dot-label">Key Insight</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="9"><span class="dot-label">Iterations</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="10"><span class="dot-label">Solution</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="11"><span class="dot-label">Impact</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="12"><span class="dot-label">Reflection</span><div class="dot"></div></div>
+  <div class="dot-gap"></div>
+  <div class="dot-wrap" data-idx="13"><span class="dot-label">CS2 — Intro</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="14"><span class="dot-label">The Problem</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="15"><span class="dot-label">Research</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="16"><span class="dot-label">Usage Scenarios</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="17"><span class="dot-label">Solution</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="18"><span class="dot-label">Regulatory</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="19"><span class="dot-label">Impact</span><div class="dot"></div></div>
+  <div class="dot-gap"></div>
+  <div class="dot-wrap" data-idx="20"><span class="dot-label">How I Think</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="21"><span class="dot-label">AI Era</span><div class="dot"></div></div>
+  <div class="dot-wrap" data-idx="22"><span class="dot-label">Closing</span><div class="dot"></div></div>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     S01 — OPENING
+══════════════════════════════════════════ -->
+<section class="slide" id="s1" data-index="0">
+  <div class="si" style="justify-content:space-between;">
+    <div class="topbar">
+      <div class="mono-label r">Yuchen Liu · Portfolio 2026</div>
+      <div class="snum r">01 / 23</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:clamp(1.5rem,3vh,2.5rem);margin-top:clamp(3rem,8vh,7rem);">
+      <div class="ey r">
+        <div class="ey-dot"></div>
+        <span class="ey-text">Portfolio Presentation for Company X</span>
+      </div>
+      <h1 class="r" style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:var(--title);line-height:.94;letter-spacing:-.03em;color:var(--ink);">
+        Design for <span style="color:var(--accent);font-weight:500;">Trust.</span>
+      </h1>
+      <p class="body-text r" style="color:var(--mid);">
+        8+ years building high-stakes products
+      </p>
+      <div class="tag-row r">
+        <span class="tag">AI · B2B · SaaS</span>
+        <span class="tag">Legal · Healthcare</span>
+        <span class="tag">Design Systems</span>
+        <span class="tag">Brand Strategy</span>
+        <span class="tag">Judgment · Care · Credibility</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="rule r" style="margin-bottom:clamp(.8rem,1.5vh,1.2rem);"></div>
+      <div class="r">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(0,52,212,.3);padding:5px 14px;border-radius:2px;display:inline-block;">Lead Product &amp; Brand Designer</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S02 — BUSINESS IMPACT
+══════════════════════════════════════════ -->
+<section class="slide" id="s2" data-index="1">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Business Impact</span></div>
+      <div class="snum r">02 / 23</div>
+    </div>
+    <h2 class="sec-title r">Design is not UI.<br>It's <span class="ac">business leverage.</span></h2>
+    <div class="big-stat-grid r">
+      <div class="big-stat"><div class="bs-num">20×</div><div class="bs-label">Booking Growth</div></div>
+      <div class="big-stat"><div class="bs-num">10×</div><div class="bs-label">Revenue Growth</div></div>
+      <div class="big-stat"><div class="bs-num">2×</div><div class="bs-label">Client Usage</div></div>
+      <div class="big-stat"><div class="bs-num">70%</div><div class="bs-label">Workflow Efficiency</div></div>
+      <div class="big-stat"><div class="bs-num">$14M</div><div class="bs-label">Funding Supported</div></div>
+    </div>
+    <div class="body-text r" style="font-style:italic;">All figures from real products. All driven by design decisions.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S03 — WHAT MAKES ME DIFFERENT
+══════════════════════════════════════════ -->
+<section class="slide" id="s3" data-index="2" style="background:var(--bg-sub);">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Point of View</span></div>
+      <div class="snum r">03 / 23</div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(1.5rem,3vh,2.5rem);">
+      <div class="mono-label r">Founder Mindset · Brand · Product</div>
+
+      <div class="r" style="font-family:'Inter',sans-serif;font-weight:500;font-size:clamp(1.5rem,3.5vw,3.2rem);line-height:1.2;letter-spacing:-.02em;color:var(--ink);max-width:26ch;">
+        "When a product affects people's work — what gives a designer the right to choose?"
+      </div>
+
+      <div class="r" style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--faint);max-width:min(90vw,860px);">
+        <div style="background:var(--bg);padding:clamp(1rem,2vh,1.6rem) clamp(1rem,2vw,1.8rem);cursor:default;transition:background .25s;" onmouseenter="this.style.background='var(--accent)';this.querySelectorAll('*').forEach(e=>e.style.color='white')" onmouseleave="this.style.background='var(--bg)';this.querySelector('.cell-h').style.color='var(--ink)';this.querySelector('.cell-b').style.color='var(--mid)'">
+          <div class="cell-h" style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.92rem,1.15vw,1.06rem);color:var(--ink);margin-bottom:.3rem;transition:color .25s;">High-stakes environments</div>
+          <div class="cell-b" style="font-family:'Inter',sans-serif;font-weight:300;font-size:var(--body-sm);color:var(--mid);line-height:1.5;transition:color .25s;white-space:nowrap;">Legal decisions · Medical outcomes · Enterprise risk</div>
+        </div>
+        <div style="background:var(--bg);padding:clamp(1rem,2vh,1.6rem) clamp(1rem,2vw,1.8rem);cursor:default;transition:background .25s;" onmouseenter="this.style.background='var(--accent)';this.querySelectorAll('*').forEach(e=>e.style.color='white')" onmouseleave="this.style.background='var(--bg)';this.querySelector('.cell-h2').style.color='var(--ink)';this.querySelector('.cell-b2').style.color='var(--mid)'">
+          <div class="cell-h2" style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.92rem,1.15vw,1.06rem);color:var(--ink);margin-bottom:.3rem;transition:color .25s;">Full ownership</div>
+          <div class="cell-b2" style="font-family:'Inter',sans-serif;font-weight:300;font-size:var(--body-sm);color:var(--mid);line-height:1.5;transition:color .25s;">Strategy → Systems → Craft → Brand</div>
+        </div>
+      </div>
+    </div>
+    <div class="rule r"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S04 — EXPERIENCE
+══════════════════════════════════════════ -->
+<section class="slide" id="s4" data-index="3">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Experience</span></div>
+      <div class="snum r">04 / 23</div>
+    </div>
+    <h2 class="sec-title r">Designing where<br>decisions <span class="ac">matter.</span></h2>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+      <div class="exp-row r">
+        <div>
+          <div class="exp-co">eBrevia (DFIN) &nbsp;·&nbsp; Legal AI</div>
+          <div class="exp-role">Lead Product &amp; Brand Designer · 2017 – Present · New York</div>
+        </div>
+        <div class="exp-kpi">20× bookings · 10× revenue</div>
+      </div>
+      <div class="exp-row r">
+        <div>
+          <div class="exp-co">Accunome Science &nbsp;·&nbsp; Healthcare / Biotech</div>
+          <div class="exp-role">Design Lead, Product &amp; Brand · 2022 – 2025 · Los Angeles</div>
+        </div>
+        <div class="exp-kpi">70% faster · $14M raise</div>
+      </div>
+      <div class="exp-row r">
+        <div>
+          <div class="exp-co">Lippincott &nbsp;·&nbsp; Global Brand Consultancy</div>
+          <div class="exp-role">Interaction Designer · 2016 · Hong Kong</div>
+        </div>
+        <div class="exp-kpi">Global brand &amp; product</div>
+      </div>
+      <div class="exp-row r">
+        <div>
+          <div class="exp-co">Havas &nbsp;·&nbsp; Global Creative Agency</div>
+          <div class="exp-role">Designer · 2015 · Shanghai</div>
+        </div>
+        <div class="exp-kpi">Hershey · Chivas</div>
+      </div>
+    </div>
+    <div class="body-text r" style="font-style:italic;">Parsons School of Design, BFA</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S05 — DESIGN PHILOSOPHY
+══════════════════════════════════════════ -->
+<section class="slide" id="s5" data-index="4">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Design Philosophy</span></div>
+      <div class="snum r">05 / 23</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(1.5rem,3vh,2.5rem);">
+      <h2 class="sec-title r">Designing for <span class="ac">Trust.</span></h2>
+      <div class="body-text r" style="max-width:52ch;font-size:clamp(.95rem,1.2vw,1.1rem);">Trust isn't visual — it's systemic. When all four layers align, people don't just use the product. They rely on it.</div>
+      <div class="trust-grid r">
+        <div class="trust-cell"><div class="tc-h">Users ↔ Product</div><div class="tc-b">clarity &amp; confidence</div></div>
+        <div class="trust-cell"><div class="tc-h">Clients ↔ Company</div><div class="tc-b">credibility &amp; authority</div></div>
+        <div class="trust-cell"><div class="tc-h">Teams ↔ Decisions</div><div class="tc-b">alignment &amp; intent</div></div>
+        <div class="trust-cell"><div class="tc-h">Designer ↔ Intuition</div><div class="tc-b">judgment &amp; craft</div></div>
+      </div>
+    </div>
+    <div class="rule r"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S06 — CS1 INTRO (dark)
+══════════════════════════════════════════ -->
+<section class="slide dark-slide" id="s6" data-index="5">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot" style="background:white;"></div><span class="ey-text" style="color:white;">Case Study 01 · eBrevia</span></div>
+      <div class="snum r" style="color:white;opacity:.6;">06 / 23</div>
+    </div>
+    <div class="two-col l1r2" style="flex:1;">
+      <div class="col">
+        <div class="mono-label r" style="color:rgba(255,255,255,.6);">eBrevia · Legal AI Platform</div>
+        <h2 class="r" style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:var(--h2);line-height:.97;letter-spacing:-.025em;color:white;">
+          Prep:<br><span style="color:#255aff;">AI Contract</span><br>Clustering
+        </h2>
+        <div class="r" style="font-family:'Inter',sans-serif;font-weight:300;font-size:var(--body);color:rgba(255,255,255,.75);line-height:1.7;">Redefining how legal teams scope and price large-scale reviews</div>
+        <div class="r" style="display:flex;flex-direction:column;gap:.35rem;margin-top:.2rem;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);">Role · Lead Product Designer</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);">Client · Baker McKenzie</div>
+        </div>
+      </div>
+      <div class="col r">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/da678b5e-f2f3-4f1c-9ff9-dc9968b740db/MOCKUP+5.png?content-type=image%2Fpng" alt="Prep feature mockup" loading="lazy" style="max-height:min(55vh,460px);object-fit:contain;border-radius:10px;box-shadow:0 12px 50px rgba(0,0,0,.5);">
+      </div>
+    </div>
+    <div class="rule r"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S07 — CONTEXT
+══════════════════════════════════════════ -->
+<section class="slide" id="s7" data-index="6">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Context</span></div>
+      <div class="snum r">07 / 23</div>
+    </div>
+    <div class="two-col half" style="flex:1;">
+      <div class="col">
+        <div class="r" style="display:inline-flex;align-items:center;gap:.7rem;padding:.5rem 1rem;border:1px solid var(--faint);border-radius:3px;max-width:max-content;">
+          <div style="width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0;"></div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(.88rem,1.1vw,1rem);color:var(--ink);letter-spacing:.04em;">Baker McKenzie</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.1em;color:var(--mid);opacity:.5;">Global Law Firm</div>
+        </div>
+        <div class="r" style="font-family:'Inter',sans-serif;font-weight:500;font-size:clamp(1.1rem,1.8vw,1.6rem);line-height:1.4;color:var(--ink);padding:clamp(.9rem,1.6vh,1.3rem) clamp(1rem,2vw,1.8rem);border-left:2px solid var(--accent);background:var(--accent-l);margin-top:.5rem;">
+          "We have 5,000 contracts — how do we price this fast?"
+        </div>
+      </div>
+      <div class="col">
+        <div class="kw-list r">
+          <div class="kw-item"><b>Manual estimation</b> · time &amp; cost is guesswork</div>
+          <div class="kw-item"><b>High uncertainty</b> · error-prone</div>
+          <div class="kw-item"><b>Redundant work</b> · reviewing nearly identical contracts</div>
+          <div class="kw-item"><b>Generic AI tools</b> · didn't fit legal workflows</div>
+          <div class="kw-item"><b>Not scalable</b> · high cognitive load</div>
+        </div>
+      </div>
+    </div>
+    <div class="rule r"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S08 — FIRST ATTEMPT
+══════════════════════════════════════════ -->
+<section class="slide" id="s8" data-index="7" style="background:var(--bg-sub);">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">First Attempt</span></div>
+      <div class="snum r">08 / 23</div>
+    </div>
+    <div class="two-col l1r2" style="flex:1;">
+      <div class="col">
+        <h2 class="sec-title r">Auto-grouping<br>contracts.</h2>
+        <div class="kw-list r">
+          <div class="kw-item"><b>Group</b> contracts by AI similarity</div>
+          <div class="kw-item"><b>Reduce</b> manual review effort</div>
+          <div class="kw-item"><b>Technically</b> it worked</div>
+        </div>
+        <div class="insight r">
+          <div class="insight-label">The Gap</div>
+          <div class="insight-text">Lawyers could see groups — but couldn't act on them.</div>
+        </div>
+      </div>
+      <div class="col r">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/db2b3263-bd9a-4cfc-b379-46ee19b2ea8c/auto-group.png?format=1500w" alt="Auto grouping interface" loading="lazy" style="max-height:min(55vh,460px);object-fit:contain;border-radius:6px;width:100%;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S09 — KEY INSIGHT
+══════════════════════════════════════════ -->
+<section class="slide" id="s9" data-index="8">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Key Insight</span></div>
+      <div class="snum r">09 / 23</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(1.5rem,3vh,2.5rem);">
+
+      <h2 class="sec-title r">The real problem:<br><span class="ac">decision-making at scale.</span></h2>
+
+      <!-- Problem reframe -->
+      <div class="r" style="display:grid;grid-template-columns:1fr 2.5rem 1fr;align-items:center;max-width:min(80vw,800px);">
+        <div style="padding:clamp(1rem,1.8vh,1.5rem) clamp(1.2rem,2.2vw,2rem);border:1px solid var(--faint);background:var(--bg-sub);">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mid);margin-bottom:.45rem;">Surface Problem</div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.95rem,1.2vw,1.1rem);color:var(--mid);">Group contracts faster</div>
+        </div>
+        <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:clamp(.9rem,1.2vw,1.1rem);color:var(--accent);font-weight:700;">→</div>
+        <div style="padding:clamp(1rem,1.8vh,1.5rem) clamp(1.2rem,2.2vw,2rem);border:2px solid var(--accent);background:var(--accent-l);">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:.45rem;">Actual Problem</div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(.95rem,1.2vw,1.1rem);color:var(--ink);">Can't estimate effort or price work</div>
+        </div>
+      </div>
+
+      <!-- Three distinct points in one row -->
+      <div class="r" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--faint);max-width:min(80vw,800px);">
+        <div style="background:var(--bg);padding:clamp(.9rem,1.6vh,1.3rem) clamp(.9rem,1.8vw,1.6rem);">
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(.9rem,1.15vw,1.05rem);color:var(--ink);margin-bottom:.22rem;">Clusters are abstract</div>
+          <div class="body-text" style="font-size:var(--body-sm);">No structured grouping logic</div>
+        </div>
+        <div style="background:var(--bg);padding:clamp(.9rem,1.6vh,1.3rem) clamp(.9rem,1.8vw,1.6rem);">
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(.9rem,1.15vw,1.05rem);color:var(--ink);margin-bottom:.22rem;">No reference point</div>
+          <div class="body-text" style="font-size:var(--body-sm);">Nothing to reason from</div>
+        </div>
+        <div style="background:var(--bg);padding:clamp(.9rem,1.6vh,1.3rem) clamp(.9rem,1.8vw,1.6rem);">
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(.9rem,1.15vw,1.05rem);color:var(--ink);margin-bottom:.22rem;">Hard to estimate effort</div>
+          <div class="body-text" style="font-size:var(--body-sm);">Staffing and pricing unclear</div>
+        </div>
+      </div>
+
+      <!-- Key insight: hidden, click anywhere on slide to reveal, floats on hover -->
+      <div id="s9-insight" style="background:var(--accent);padding:clamp(.9rem,1.6vh,1.3rem) clamp(1.2rem,2.2vw,2rem);max-width:min(80vw,800px);opacity:0;transform:translateY(12px);transition:opacity .6s var(--ease),transform .6s var(--ease);pointer-events:none;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:.35rem;">Key Insight</div>
+        <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(1rem,1.4vw,1.25rem);color:white;">Lawyers think in precedents, not categories.</div>
+      </div>
+    </div>
+    <div class="rule r"></div>
+  </div>
+</section>
+<style>
+/* S09 key insight float animation on hover */
+#s9-insight.revealed { opacity:1!important; transform:translateY(0)!important; pointer-events:auto!important; }
+@keyframes floatBox { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+#s9-insight.revealed:hover { animation: floatBox 2s ease-in-out infinite; box-shadow: 0 12px 32px rgba(0,52,212,.35); }
+</style>
+<script>
+(function(){
+  var s9 = document.getElementById('s9');
+  var ins = document.getElementById('s9-insight');
+  var revealed = false;
+  s9.addEventListener('click', function(){
+    if(!revealed){ revealed=true; ins.classList.add('revealed'); }
+  });
+  // Reset when leaving slide
+  var io9 = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting){ revealed=false; ins.classList.remove('revealed'); }
+    });
+  },{threshold:0.5});
+  io9.observe(s9);
+})();
+</script>
+
+<!-- ══════════════════════════════════════════
+     S10 — ITERATIONS
+══════════════════════════════════════════ -->
+<section class="slide" id="s10" data-index="9" style="background:var(--bg-sub);">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Iterations</span></div>
+      <div class="snum r">10 / 23</div>
+    </div>
+    <h2 class="sec-title r">From grouping <span class="ac">→ reference.</span></h2>
+    <!-- Three images, same height from top, less cutoff -->
+    <div class="r" style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(.8rem,1.5vw,1.4rem);">
+      <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/d37a8964-9e83-4faf-89c0-91eaa6de5b4d/Groups+View+4.0.png?content-type=image%2Fpng" alt="Option 01" loading="lazy" style="width:100%;height:clamp(130px,22vh,200px);object-fit:cover;object-position:top;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);border:1px solid var(--faint);">
+      <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/5390318e-b256-4f50-9009-4000a92afcd5/Prep_+MVP+4.0+-+Set+as+template.png?content-type=image%2Fpng" alt="Option 02" loading="lazy" style="width:100%;height:clamp(130px,22vh,200px);object-fit:cover;object-position:top;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);border:1px solid var(--faint);">
+      <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/b81c4e79-5fcc-4289-804e-4c78085672fa/Prep_+MVP+5.0+-+Heatmap.png?content-type=image%2Fpng" alt="Option 03" loading="lazy" style="width:100%;height:clamp(130px,22vh,200px);object-fit:cover;object-position:top;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);border:1px solid var(--faint);">
+    </div>
+    <!-- Options table -->
+    <div class="r" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--faint);">
+      <div class="phase">
+        <div class="ph-n">Option 01</div>
+        <div class="ph-t">Generated Title Label</div>
+        <div class="ph-d">AI generates a brief summary per cluster. Orienting — but still abstract.</div>
+      </div>
+      <div class="phase">
+        <div class="ph-n">Option 02</div>
+        <div class="ph-t">Playbook Upload</div>
+        <div class="ph-d">Lawyers upload internal playbooks. AI matches clusters. Powerful — high complexity.</div>
+      </div>
+      <div class="phase">
+        <div class="ph-n">Option 03</div>
+        <div class="ph-t">Contract Type Tag</div>
+        <div class="ph-d">Most straightforward reference — but loses nuance.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S11 — SOLUTION
+══════════════════════════════════════════ -->
+<section class="slide" id="s11" data-index="10">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Solution</span></div>
+      <div class="snum r">11 / 23</div>
+    </div>
+    <div class="two-col half" style="flex:1;">
+      <div class="col">
+        <h2 class="sec-title r">Template contract<br>as <span class="ac">anchor.</span></h2>
+        <div class="kw-list r">
+          <div class="kw-item">Each cluster gets <b>one representative contract</b></div>
+          <div class="kw-item">Browse the template, <b>understand the pattern</b></div>
+          <div class="kw-item">Estimate the rest <b>much faster</b></div>
+        </div>
+        <div class="insight r">
+          <div class="insight-label">Stakeholder Pushback</div>
+          <div class="insight-text" style="line-height:2;font-weight:400;">
+            <div style="display:flex;align-items:center;gap:.7rem;">⚙️ <span>Engineering complexity</span></div>
+            <div style="display:flex;align-items:center;gap:.7rem;">⏳ <span>Timeline concerns</span></div>
+            <div style="display:flex;align-items:center;gap:.7rem;">⚡ <span>Simpler automation</span></div>
+          </div>
+        </div>
+        <div class="insight r" style="background:var(--accent-l);border-color:rgba(0,52,212,.2);">
+          <div class="insight-label">Reframe</div>
+          <div class="insight-text">"Would you trust categories, or real examples?"</div>
+        </div>
+      </div>
+      <!-- Auto-slideshow -->
+      <div class="col r" id="s11-slideshow" style="position:relative;">
+        <img class="s11-img" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/f877a5a8-922b-42ad-a6db-ffcdc8cbe52a/Prep_+MVP+5.1+-+Expand+option2.png?content-type=image%2Fpng" alt="" loading="lazy" style="width:100%;max-height:min(60vh,500px);object-fit:contain;border-radius:10px;box-shadow:0 8px 36px rgba(0,0,0,.13);border:1px solid var(--faint);position:absolute;top:0;left:0;transition:opacity .7s ease;opacity:1;">
+        <img class="s11-img" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/44d199cb-3e65-4cba-bf46-e8512680dec2/Prep_+MVP+5.1+change+template+processing.png?content-type=image%2Fpng" alt="" loading="lazy" style="width:100%;max-height:min(60vh,500px);object-fit:contain;border-radius:10px;box-shadow:0 8px 36px rgba(0,0,0,.13);border:1px solid var(--faint);position:absolute;top:0;left:0;transition:opacity .7s ease;opacity:0;">
+        <img class="s11-img" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/f751bbc3-4388-4985-a58e-58d5292c9f02/Prep_+MVP+5.0+-+Change+Template.png?content-type=image%2Fpng" alt="" loading="lazy" style="width:100%;max-height:min(60vh,500px);object-fit:contain;border-radius:10px;box-shadow:0 8px 36px rgba(0,0,0,.13);border:1px solid var(--faint);position:absolute;top:0;left:0;transition:opacity .7s ease;opacity:0;">
+        <!-- Spacer to hold height -->
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/f877a5a8-922b-42ad-a6db-ffcdc8cbe52a/Prep_+MVP+5.1+-+Expand+option2.png?content-type=image%2Fpng" alt="" style="width:100%;max-height:min(60vh,500px);object-fit:contain;visibility:hidden;">
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  let s11idx=0, s11timer=null;
+  const s11imgs = document.querySelectorAll('.s11-img');
+  const s11el = document.getElementById('s11-slideshow');
+  function s11show(i){ s11imgs.forEach((img,n)=>img.style.opacity=n===i?'1':'0'); }
+  function s11start(){ s11timer=setInterval(()=>{ s11idx=(s11idx+1)%s11imgs.length; s11show(s11idx); },4000); }
+  function s11stop(){ clearInterval(s11timer); }
+  s11el.addEventListener('mouseenter', s11stop);
+  s11el.addEventListener('mouseleave', s11start);
+  s11start();
+})();
+</script>
+
+<!-- ══════════════════════════════════════════
+     S12 — IMPACT CS1
+══════════════════════════════════════════ -->
+<section class="slide" id="s12" data-index="11" style="background:var(--bg-sub);">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Outcome · eBrevia</span></div>
+      <div class="snum r">12 / 23</div>
+    </div>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1.6fr;gap:clamp(2rem,4vw,5rem);align-items:center;overflow:hidden;">
+      <!-- Left: metrics + text -->
+      <div style="display:flex;flex-direction:column;gap:clamp(1rem,2vh,1.6rem);">
+        <h2 class="sec-title r" style="font-size:clamp(1.8rem,3.2vw,3rem);">First-to-market.<br><span class="ac">Real adoption.</span></h2>
+        <div class="metrics r">
+          <div class="metric"><div class="metric-num">2×</div><div class="metric-label">ARR</div></div>
+          <div class="metric"><div class="metric-num">1st</div><div class="metric-label">To Market</div></div>
+        </div>
+        <div class="body-text r">Baker McKenzie doubled billable usage and contract volume. The template-based approach became one of the core product capabilities.</div>
+      </div>
+      <!-- Right: image switcher -->
+      <div class="r" style="display:flex;flex-direction:column;gap:.8rem;">
+        <!-- Buttons -->
+        <div style="display:flex;gap:.5rem;">
+          <button id="s12-btn-gif" onclick="s12show('gif')" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border:1px solid var(--accent);background:var(--accent);color:white;border-radius:2px;cursor:pointer;transition:all .2s;">Demo GIF</button>
+          <button id="s12-btn-v1" onclick="s12show('v1')" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border:1px solid var(--faint);background:var(--bg);color:var(--mid);border-radius:2px;cursor:pointer;transition:all .2s;">V1</button>
+          <button id="s12-btn-v2" onclick="s12show('v2')" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border:1px solid var(--faint);background:var(--bg);color:var(--mid);border-radius:2px;cursor:pointer;transition:all .2s;">V2</button>
+        </div>
+        <!-- Images -->
+        <div style="position:relative;">
+          <img id="s12-gif" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/5bcc6232-19a8-4137-8268-2a0ccc3011f9/CompareWithTemplate.gif?content-type=image%2Fgif" alt="Demo GIF" loading="lazy" style="width:100%;height:auto;max-height:min(50vh,420px);object-fit:cover;border-radius:10px;box-shadow:0 6px 28px rgba(0,0,0,.12);border:1px solid var(--faint);display:block;">
+          <img id="s12-v1" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/6e1de52c-2de3-43b4-addc-05ca4b008dd3/Prep_+MVP+5.0+-+Hover+-+Template.png?content-type=image%2Fpng" alt="V1" loading="lazy" style="width:100%;height:auto;max-height:min(50vh,420px);object-fit:cover;object-position:center top;border-radius:10px;box-shadow:0 6px 28px rgba(0,0,0,.12);border:1px solid var(--faint);display:none;">
+          <img id="s12-v2" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/85062537-294f-4d3c-be71-a7b7e8bc6861/Prep_+MVP+6.2+open+cluster+-+hover+file.png?content-type=image%2Fpng" alt="V2" loading="lazy" style="width:100%;height:auto;max-height:min(50vh,420px);object-fit:cover;object-position:top;border-radius:10px;box-shadow:0 6px 28px rgba(0,0,0,.12);border:1px solid var(--faint);display:none;">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+function s12show(key){
+  ['gif','v1','v2'].forEach(k=>{
+    document.getElementById('s12-'+k).style.display = k===key?'block':'none';
+    const btn = document.getElementById('s12-btn-'+k);
+    btn.style.background = k===key?'var(--accent)':'var(--bg)';
+    btn.style.color = k===key?'white':'var(--mid)';
+    btn.style.borderColor = k===key?'var(--accent)':'var(--faint)';
+  });
+}
+</script>
+
+<!-- ══════════════════════════════════════════
+     S12.5 — REFLECTION / TRANSITION
+══════════════════════════════════════════ -->
+<section class="slide dark-slide" id="s12b" data-index="12">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot" style="background:white;"></div><span class="ey-text" style="color:white;">Reflection</span></div>
+      <div class="snum r" style="color:white;opacity:.6;">13 / 23</div>
+    </div>
+    <div class="two-col l1r2" style="flex:1;">
+      <div class="col">
+        <h2 class="r" style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:var(--h2);line-height:.97;letter-spacing:-.025em;color:white;">Innovation comes from<br><span style="color:#255aff;">partnerships.</span></h2>
+        <div class="kw-list r">
+          <div class="kw-item" style="color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.12);">Trusted clients reveal <b style="color:white;">real workflows</b></div>
+          <div class="kw-item" style="color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.12);">Good design <b style="color:white;">reframes</b> the problem</div>
+          <div class="kw-item" style="color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.12);">Every decision was made to <b style="color:white;">build trust</b></div>
+        </div>
+      </div>
+      <div class="col r">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/bc475f52-057a-4949-be67-f34260836a06/MOCKUP+3.1.png?content-type=image%2Fpng" alt="eBrevia reflection mockup" loading="lazy" style="max-height:min(60vh,520px);object-fit:contain;border-radius:10px;box-shadow:0 16px 60px rgba(0,0,0,.6);">
+      </div>
+    </div>
+    <div class="rule r"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S13 — CS2 INTRO (dark)
+══════════════════════════════════════════ -->
+<section class="slide dark-slide" id="s13" data-index="13">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot" style="background:white;"></div><span class="ey-text" style="color:white;">Case Study 02 · Accunome</span></div>
+      <div class="snum r" style="color:white;opacity:.6;">14 / 23</div>
+    </div>
+    <!-- Image LEFT, text RIGHT -->
+    <div class="two-col l1r2" style="flex:1;">
+      <div class="col r">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/200852cf-4588-4751-a643-8e5a251a2053/Image+Mask.png?content-type=image%2Fpng" alt="DXcellence12 platform" loading="lazy" style="max-height:min(58vh,500px);object-fit:contain;border-radius:10px;box-shadow:0 12px 50px rgba(0,0,0,.5);width:100%;">
+      </div>
+      <div class="col">
+        <div class="mono-label r" style="color:rgba(255,255,255,.6);">Accunome Science · Healthcare / Biotech</div>
+        <h2 class="r" style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:var(--h2);line-height:.97;letter-spacing:-.025em;color:white;">
+          DXcellence12:<br><span style="color:#255aff;">Molecular</span><br>Diagnostics
+        </h2>
+        <div class="r" style="font-family:'Inter',sans-serif;font-weight:300;font-size:var(--body);color:rgba(255,255,255,.75);line-height:1.7;">Regulated clinical platform. Errors affect patient outcomes.</div>
+        <div class="r" style="display:flex;flex-direction:column;gap:.35rem;margin-top:.2rem;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);">Role · Lead Product Designer</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);">Partner · bioMérieux</div>
+        </div>
+      </div>
+    </div>
+    <div class="rule r"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S14 — THE PROBLEM
+══════════════════════════════════════════ -->
+<section class="slide" id="s14" data-index="14">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">The Problem</span></div>
+      <div class="snum r">15 / 23</div>
+    </div>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,4vw,5rem);align-items:center;overflow:hidden;">
+      <!-- Image switcher -->
+      <div class="r" style="display:flex;flex-direction:column;gap:.8rem;">
+        <div class="r" style="display:flex;gap:.5rem;">
+          <button id="s14-btn-machine" onclick="s14show('machine')" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border:1px solid var(--accent);background:var(--accent);color:white;border-radius:2px;cursor:pointer;transition:all .2s;">DXcellence12</button>
+          <button id="s14-btn-process" onclick="s14show('process')" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border:1px solid var(--faint);background:var(--bg);color:var(--mid);border-radius:2px;cursor:pointer;transition:all .2s;">Process</button>
+          <button id="s14-btn-before" onclick="s14show('before')" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border:1px solid var(--faint);background:var(--bg);color:var(--mid);border-radius:2px;cursor:pointer;transition:all .2s;">Before</button>
+        </div>
+        <div style="position:relative;">
+          <img id="s14-machine" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/81b2fad2-1b1a-4991-b9af-30fee252f7d7/1080%E8%AE%BE%E5%A4%87en.png?content-type=image%2Fpng" alt="DXcellence12 machine" loading="lazy" style="width:100%;height:auto;max-height:min(55vh,460px);object-fit:contain;display:block;">
+          <img id="s14-process" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/6051ade6-45d7-4778-902d-8106b0e47d21/GRAPHIC.png?content-type=image%2Fpng" alt="Process graphic" loading="lazy" style="width:100%;height:auto;max-height:min(55vh,460px);object-fit:contain;display:none;">
+          <img id="s14-before" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/44306e9b-c7c6-47fe-8435-8a9ae1221376/Screenshot+2026-01-26+at+8.10.28%E2%80%AFAM.png?content-type=image%2Fpng" alt="Before interface" loading="lazy" style="width:100%;height:auto;max-height:min(55vh,460px);object-fit:contain;border-radius:8px;box-shadow:0 6px 28px rgba(0,0,0,.1);border:1px solid var(--faint);display:none;">
+        </div>
+      </div>
+      <!-- Problem list -->
+      <div class="col">
+        <h2 class="sec-title r" style="font-size:clamp(1.8rem,3vw,2.8rem);">48 variables.<br><span class="ac">Zero room</span><br><span class="dim">for error.</span></h2>
+        <div class="kw-list r">
+          <div class="kw-item"><b>48+ input fields</b> · engineer-built table</div>
+          <div class="kw-item"><b>Mental mapping</b> · software → physical wells</div>
+          <div class="kw-item"><b>High cognitive load</b> under time pressure</div>
+          <div class="kw-item"><b>Frequent errors</b> · steep learning curve</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+function s14show(key){
+  ['machine','process','before'].forEach(k=>{
+    document.getElementById('s14-'+k).style.display = k===key?'block':'none';
+    const btn = document.getElementById('s14-btn-'+k);
+    btn.style.background = k===key?'var(--accent)':'var(--bg)';
+    btn.style.color = k===key?'white':'var(--mid)';
+    btn.style.borderColor = k===key?'var(--accent)':'var(--faint)';
+  });
+}
+</script>
+
+<!-- ══════════════════════════════════════════
+     S15 — RESEARCH
+══════════════════════════════════════════ -->
+<section class="slide" id="s15" data-index="15" style="background:var(--bg-sub);">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Research</span></div>
+      <div class="snum r">16 / 23</div>
+    </div>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1.4fr;gap:clamp(2rem,4vw,5rem);align-items:center;overflow:hidden;">
+      <div class="col" style="justify-content:center;">
+        <h2 class="sec-title r" style="font-size:clamp(1.8rem,3.2vw,3rem);">Multi-layer<br><span class="ac">discovery.</span></h2>
+        <div class="phase-strip r" style="grid-template-columns:1fr 1fr;">
+          <div class="phase"><div class="ph-n">Field</div><div class="ph-t">Lab Immersion</div><div class="ph-d">Operated the machine. Observed real workflows and errors.</div></div>
+          <div class="phase"><div class="ph-n">Qual</div><div class="ph-t">Interviews</div><div class="ph-d">Lab techs, directors, hospital IT, scientists, CEO.</div></div>
+          <div class="phase"><div class="ph-n">Quant</div><div class="ph-t">Structured Research</div><div class="ph-d">Questionnaires. Hospital visits. Cross-site synthesis.</div></div>
+          <div class="phase"><div class="ph-n">Market</div><div class="ph-t">Competitive Analysis</div><div class="ph-d">Cobas, BACT/ALERT, MAESTRIA.</div></div>
+        </div>
+      </div>
+      <!-- 4 images in 2×2, height allows all to show -->
+      <div class="r" style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:.6rem;height:min(80vh,700px);overflow:hidden;">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/a75625ad-7d30-483d-9907-f9f3bd9222bc/Screenshot%2B2026-01-22%2Bat%2B4.15.35%E2%80%AFPM+copy.png?content-type=image%2Fpng" alt="Research 1" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/4975dacb-8388-4840-974e-0b136777a062/173a72fd2c57a6911692daa96d8392ee+22.png?content-type=image%2Fpng" alt="Research 2" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/9387ead0-8cfc-4052-b414-8b1f4c98c258/Screenshot+2026-01-22+at+5.05.59%E2%80%AFPM.png?content-type=image%2Fpng" alt="Research 3" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/a6335293-d884-4106-9f88-3f0380138bfb/WechatIMG38.jpg?content-type=image%2Fjpeg" alt="Research 4" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S16 — KEY USAGE SCENARIOS
+══════════════════════════════════════════ -->
+<section class="slide" id="s16" data-index="16">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Key Usage Scenarios Identified</span></div>
+      <div class="snum r">17 / 23</div>
+    </div>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,4vw,5rem);align-items:center;overflow:hidden;">
+      <!-- Left: title + two scenario cards + insight, centered vertically -->
+      <div style="display:flex;flex-direction:column;gap:clamp(.9rem,1.8vh,1.4rem);justify-content:center;">
+        <h2 class="sec-title r">Key Usage<br><span class="ac">Scenarios.</span></h2>
+        <div class="r" style="border:1px solid var(--faint);padding:clamp(1rem,2vh,1.6rem) clamp(1.2rem,2.5vw,2rem);cursor:default;transition:background .25s;" onmouseenter="this.style.background='var(--accent-l)'" onmouseleave="this.style.background='transparent'">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;">Small Labs · Single Machine</div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(1rem,1.5vw,1.35rem);color:var(--ink);line-height:1.2;margin-bottom:.4rem;">Flexibility &amp; per-sample control</div>
+          <div class="body-text">Custom Testing differs every run.</div>
+        </div>
+        <div class="r" style="border:1px solid var(--faint);padding:clamp(1rem,2vh,1.6rem) clamp(1.2rem,2.5vw,2rem);cursor:default;transition:background .25s;" onmouseenter="this.style.background='var(--accent-l)'" onmouseleave="this.style.background='transparent'">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;">Large Hospitals · Multiple Machines</div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(1rem,1.5vw,1.35rem);color:var(--ink);line-height:1.2;margin-bottom:.4rem;">Automation &amp; consistency at scale</div>
+          <div class="body-text">High throughput. Strong need to reuse configurations.</div>
+        </div>
+        <div class="insight r">
+          <div class="insight-text">Batch efficiency and individual control must coexist.</div>
+        </div>
+      </div>
+      <!-- Right: billboard image with rounded corners and shadow -->
+      <div class="r" style="display:flex;align-items:center;justify-content:center;height:100%;overflow:hidden;">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/2eb7b915-92e4-428c-8f11-6a3f37e8136f/Blue_Sky_Billboard_Mockup.png?content-type=image%2Fpng" alt="Usage scenarios billboard" loading="lazy" style="width:100%;height:auto;max-height:min(55vh,460px);object-fit:contain;border-radius:12px;box-shadow:0 8px 36px rgba(0,0,0,.12);">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S17 — SOLUTION (interactive image switcher)
+══════════════════════════════════════════ -->
+<section class="slide" id="s17" data-index="17" style="background:var(--bg-sub);">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Solution</span></div>
+      <div class="snum r">18 / 23</div>
+    </div>
+    <div class="two-col l1r2" style="flex:1;">
+      <div class="col">
+        <h2 class="sec-title r">Match UI to<br><span class="ac">physical reality.</span></h2>
+        <div class="body-text r">What you see on screen = what's physically in the machine. 1:1 mapping. No mental translation.</div>
+        <!-- Mode switcher buttons -->
+        <div class="r" style="display:flex;flex-direction:column;gap:0;">
+          <button onclick="switchView('machine')" id="btn-machine" style="text-align:left;padding:clamp(.55rem,1.1vh,.9rem) clamp(.8rem,1.5vw,1.4rem);border:none;border-bottom:1px solid var(--faint);font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s;background:var(--accent);color:white;">← Machine View</button>
+          <button onclick="switchView('direct')" id="btn-direct" style="text-align:left;padding:clamp(.55rem,1.1vh,.9rem) clamp(.8rem,1.5vw,1.4rem);border:none;border-bottom:1px solid var(--faint);font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s;background:var(--bg);color:var(--mid);">Direct Input</button>
+          <button onclick="switchView('modes')" id="btn-modes" style="text-align:left;padding:clamp(.55rem,1.1vh,.9rem) clamp(.8rem,1.5vw,1.4rem);border:none;border-bottom:1px solid var(--faint);font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s;background:var(--bg);color:var(--mid);">6 Input Methods</button>
+          <button onclick="switchView('template')" id="btn-template" style="text-align:left;padding:clamp(.55rem,1.1vh,.9rem) clamp(.8rem,1.5vw,1.4rem);border:none;font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s;background:var(--bg);color:var(--mid);">Template Mode</button>
+        </div>
+        <div class="body-text r" style="color:var(--accent);font-style:italic;">9 steps → 6 steps → 3 phases: Setup · Confirm · Run</div>
+      </div>
+      <!-- Image container -->
+      <div class="col r" style="position:relative;align-items:center;justify-content:center;">
+        <img id="view-machine" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/a1401057-d1ec-4e63-8760-23ac5c04c888/Screenshot+2026-01-22+at+4.14.34%E2%80%AFPM.png?content-type=image%2Fpng" alt="Machine top view" loading="lazy" style="position:absolute;width:100%;max-height:min(55vh,460px);object-fit:contain;border-radius:10px;box-shadow:0 8px 36px rgba(0,0,0,.13);transition:opacity .35s var(--ease);opacity:1;">
+        <img id="view-direct" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/32bb8616-483a-484a-ba24-f7a7f53be9fb/%E6%A3%80%E6%B5%8B+-+%E5%BD%95%E5%85%A5%E6%A8%A1%E5%BC%8F+B+%E6%A3%80%E6%B5%8B%E9%A1%B9%E7%9B%AE_en-US.png?content-type=image%2Fpng" alt="Direct input interface" loading="lazy" style="position:absolute;width:100%;max-height:min(55vh,460px);object-fit:contain;border-radius:10px;box-shadow:0 8px 36px rgba(0,0,0,.13);transition:opacity .35s var(--ease);opacity:0;">
+        <img id="view-modes" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/29e5cb87-563b-4166-abcc-ca420d4f6253/hero.png?content-type=image%2Fpng" alt="6 input methods" loading="lazy" style="position:absolute;width:100%;max-height:min(55vh,460px);object-fit:contain;transition:opacity .35s var(--ease);opacity:0;border-radius:0;box-shadow:none;">
+        <img id="view-template" src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/a7bc365e-02d0-4c68-8a36-9e172c11d08b/%E6%A3%80%E6%B5%8B+-+%E5%88%97%E8%A1%A8%E6%A8%A1%E5%BC%8F+-+%E6%A8%A1%E6%9D%BF_en-US.png?content-type=image%2Fpng" alt="Template mode" loading="lazy" style="position:absolute;width:100%;max-height:min(55vh,460px);object-fit:contain;border-radius:10px;box-shadow:0 8px 36px rgba(0,0,0,.13);transition:opacity .35s var(--ease);opacity:0;">
+        <!-- spacer -->
+        <div style="width:100%;padding-top:min(55vh,460px);visibility:hidden;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S18 — REGULATORY
+══════════════════════════════════════════ -->
+<section class="slide" id="s18" data-index="18">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Regulatory Design</span></div>
+      <div class="snum r">19 / 23</div>
+    </div>
+    <div class="two-col l1r2" style="flex:1;">
+      <div class="col">
+        <h2 class="sec-title r">Designing under<br><span class="ac">constraints.</span></h2>
+        <div class="r" style="display:grid;grid-template-columns:1fr;gap:1px;background:var(--faint);">
+          <div style="background:var(--bg);padding:clamp(.85rem,1.6vh,1.3rem) clamp(.9rem,1.8vw,1.6rem);">
+            <div class="mono-label" style="margin-bottom:.3rem;color:var(--accent);">Ship Incrementally</div>
+            <div class="body-text">Improvements without triggering full review</div>
+          </div>
+          <div style="background:var(--bg);padding:clamp(.85rem,1.6vh,1.3rem) clamp(.9rem,1.8vw,1.6rem);">
+            <div class="mono-label" style="margin-bottom:.3rem;color:var(--accent);">Batch Submissions</div>
+            <div class="body-text">Bundle changes when justified</div>
+          </div>
+          <div style="background:var(--bg);padding:clamp(.85rem,1.6vh,1.3rem) clamp(.9rem,1.8vw,1.6rem);">
+            <div class="mono-label" style="margin-bottom:.3rem;color:var(--accent);">Balance</div>
+            <div class="body-text">Speed · safety · approval velocity</div>
+          </div>
+        </div>
+      </div>
+      <div class="col r">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/dde2aa1e-65c4-46e8-a5e0-46d0169c882c/Accunome-portfolio-mockup.png?content-type=image%2Fpng" alt="Accunome mockup" loading="lazy" style="max-height:min(52vh,440px);object-fit:contain;border-radius:10px;box-shadow:0 8px 36px rgba(0,0,0,.12);">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S19 — IMPACT CS2
+══════════════════════════════════════════ -->
+<section class="slide" id="s19" data-index="19" style="background:var(--bg-sub);">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Outcome · Accunome</span></div>
+      <div class="snum r">20 / 23</div>
+    </div>
+    <div class="two-col l1r2" style="flex:1;">
+      <div class="col">
+        <h2 class="sec-title r">Design credibility<br>became <span class="ac">investor trust.</span></h2>
+        <div class="metrics r">
+          <div class="metric"><div class="metric-num">70%</div><div class="metric-label">Setup Time ↓</div></div>
+          <div class="metric"><div class="metric-num">4×</div><div class="metric-label">Bookings</div></div>
+          <div class="metric"><div class="metric-num">$14M</div><div class="metric-label">Funding</div></div>
+        </div>
+        <div class="kw-list r">
+          <div class="kw-item"><b>CE certification</b> secured</div>
+          <div class="kw-item"><b>Class III NMPA</b> regulatory approval</div>
+          <div class="kw-item"><b>bioMérieux</b> strategic partnership</div>
+          <div class="kw-item"><b>Complaints stopped</b> after rollout</div>
+        </div>
+      </div>
+      <div class="col r" style="display:grid;grid-template-rows:1fr 1fr;gap:.8rem;">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/dff8d293-0e95-4344-9c1c-6fd4565eb327/accunome+banner7.png?content-type=image%2Fpng" alt="Accunome screen mockups" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px;box-shadow:0 6px 28px rgba(0,0,0,.12);">
+        <img src="https://images.squarespace-cdn.com/content/649a1ebfd8531f2969e03ac2/0a67c8aa-1b12-48b7-8f1d-347f1224bb01/6eeb03ba42596c920b12b5f059de65bf2+copy.png?content-type=image%2Fpng" alt="Accunome team" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px;box-shadow:0 6px 28px rgba(0,0,0,.12);">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S20 — HOW I THINK
+══════════════════════════════════════════ -->
+<section class="slide" id="s20" data-index="20">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">How I Think</span></div>
+      <div class="snum r">21 / 23</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(1.5rem,3vh,2.5rem);">
+      <h2 class="sec-title r">The full <span class="ac">stack.</span></h2>
+      <div class="r" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--faint);">
+        <div style="background:var(--bg);padding:clamp(1rem,2vh,1.6rem) clamp(1rem,2vw,1.8rem);cursor:default;transition:background .25s;" onmouseenter="this.style.background='var(--accent)';this.querySelectorAll('*').forEach(e=>e.style.color='white')" onmouseleave="this.style.background='var(--bg)';this.querySelector('.sk-label').style.color='var(--accent)';this.querySelector('.sk-title').style.color='var(--ink)';this.querySelector('.sk-body').style.color='var(--mid)'">
+          <div class="sk-label" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;transition:color .25s;">Strategy</div>
+          <div class="sk-title" style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.9rem,1.15vw,1.05rem);color:var(--ink);margin-bottom:.3rem;transition:color .25s;">Product Vision</div>
+          <div class="sk-body" style="font-family:'Inter',sans-serif;font-weight:300;font-size:var(--body-sm);color:var(--mid);line-height:1.5;transition:color .25s;white-space:nowrap;">Roadmap · Prioritization · Alignment</div>
+        </div>
+        <div style="background:var(--bg);padding:clamp(1rem,2vh,1.6rem) clamp(1rem,2vw,1.8rem);cursor:default;transition:background .25s;" onmouseenter="this.style.background='var(--accent)';this.querySelectorAll('*').forEach(e=>e.style.color='white')" onmouseleave="this.style.background='var(--bg)';this.querySelector('.sk-label2').style.color='var(--accent)';this.querySelector('.sk-title2').style.color='var(--ink)';this.querySelector('.sk-body2').style.color='var(--mid)'">
+          <div class="sk-label2" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;transition:color .25s;">Systems</div>
+          <div class="sk-title2" style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.9rem,1.15vw,1.05rem);color:var(--ink);margin-bottom:.3rem;transition:color .25s;">Design Systems</div>
+          <div class="sk-body2" style="font-family:'Inter',sans-serif;font-weight:300;font-size:var(--body-sm);color:var(--mid);line-height:1.5;transition:color .25s;white-space:nowrap;">Tokens · Components · Scale</div>
+        </div>
+        <div style="background:var(--bg);padding:clamp(1rem,2vh,1.6rem) clamp(1rem,2vw,1.8rem);cursor:default;transition:background .25s;" onmouseenter="this.style.background='var(--accent)';this.querySelectorAll('*').forEach(e=>e.style.color='white')" onmouseleave="this.style.background='var(--bg)';this.querySelector('.sk-label3').style.color='var(--accent)';this.querySelector('.sk-title3').style.color='var(--ink)';this.querySelector('.sk-body3').style.color='var(--mid)'">
+          <div class="sk-label3" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;transition:color .25s;">Craft</div>
+          <div class="sk-title3" style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.9rem,1.15vw,1.05rem);color:var(--ink);margin-bottom:.3rem;transition:color .25s;">Interaction Design</div>
+          <div class="sk-body3" style="font-family:'Inter',sans-serif;font-weight:300;font-size:var(--body-sm);color:var(--mid);line-height:1.5;transition:color .25s;white-space:nowrap;">Research · Prototyping · Delivery</div>
+        </div>
+        <div style="background:var(--bg);padding:clamp(1rem,2vh,1.6rem) clamp(1rem,2vw,1.8rem);cursor:default;transition:background .25s;" onmouseenter="this.style.background='var(--accent)';this.querySelectorAll('*').forEach(e=>e.style.color='white')" onmouseleave="this.style.background='var(--bg)';this.querySelector('.sk-label4').style.color='var(--accent)';this.querySelector('.sk-title4').style.color='var(--ink)';this.querySelector('.sk-body4').style.color='var(--mid)'">
+          <div class="sk-label4" style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;transition:color .25s;">Brand</div>
+          <div class="sk-title4" style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.9rem,1.15vw,1.05rem);color:var(--ink);margin-bottom:.3rem;transition:color .25s;">Visual Identity</div>
+          <div class="sk-body4" style="font-family:'Inter',sans-serif;font-weight:300;font-size:var(--body-sm);color:var(--mid);line-height:1.5;transition:color .25s;white-space:nowrap;">Identity · Marketing · Authority</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S21 — AI ERA
+══════════════════════════════════════════ -->
+<section class="slide" id="s21" data-index="21" style="background:var(--bg-sub);">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot"></div><span class="ey-text">Designing in the AI Era</span></div>
+      <div class="snum r">22 / 23</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(1.5rem,3vh,2.5rem);">
+      <div class="r" style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--faint);">
+        <div style="background:var(--bg);padding:clamp(1.2rem,2.5vh,2rem) clamp(1.5rem,3vw,2.5rem);">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--mid);opacity:.5;margin-bottom:.6rem;">Before</div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(1.3rem,2.2vw,2rem);color:var(--mid);letter-spacing:-.02em;">Execution is faster</div>
+        </div>
+        <div style="background:var(--accent);padding:clamp(1.2rem,2.5vh,2rem) clamp(1.5rem,3vw,2.5rem);">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:.6rem;">Now</div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:clamp(1.3rem,2.2vw,2rem);color:white;letter-spacing:-.02em;">Judgment matters more</div>
+        </div>
+      </div>
+      <div class="kw-list r">
+        <div class="kw-item"><b>Execution is faster</b> — AI handles what took weeks</div>
+        <div class="kw-item"><b>Taste &amp; judgment</b> — what AI cannot replicate</div>
+        <div class="kw-item"><b>8 years in AI products</b> — I know what makes AI trustworthy</div>
+        <div class="kw-item"><b>Strategy-led designers</b> — more valuable, not less</div>
+      </div>
+    </div>
+    <div class="rule r"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     S22 — CLOSING (dark)
+══════════════════════════════════════════ -->
+<section class="slide dark-slide" id="s22" data-index="22">
+  <div class="si">
+    <div class="topbar">
+      <div class="ey r"><div class="ey-dot" style="background:white;"></div><span class="ey-text" style="color:white;">Thank You</span></div>
+      <div class="snum r" style="color:white;opacity:.6;">23 / 23</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(1.5rem,3vh,2.5rem);">
+      <h2 class="r" style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:var(--title);line-height:.94;letter-spacing:-.03em;color:white;">
+        I design<br>
+        <span style="font-weight:700;color:rgba(255,255,255,.32);">products people</span><br>
+        <span style="color:#255aff;">rely on.</span>
+      </h2>
+      <div class="r" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.1);max-width:min(90vw,760px);">
+        <div style="padding:clamp(.9rem,1.8vh,1.4rem) clamp(.9rem,1.8vw,1.6rem);">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:.35rem;">Proven Impact</div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.82rem,1vw,.95rem);color:white;white-space:nowrap;">20× bookings · 70% efficiency · $14M raise</div>
+        </div>
+        <div style="padding:clamp(.9rem,1.8vh,1.4rem) clamp(.9rem,1.8vw,1.6rem);">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:.35rem;">High-Stakes Domain</div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.82rem,1vw,.95rem);color:white;white-space:nowrap;">Legal AI · Healthcare · Regulated</div>
+        </div>
+        <div style="padding:clamp(.9rem,1.8vh,1.4rem) clamp(.9rem,1.8vw,1.6rem);">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:.35rem;">Full Ownership</div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-weight:600;font-size:clamp(.82rem,1vw,.95rem);color:white;white-space:nowrap;">Strategy · Systems · Craft · Brand</div>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:clamp(.8rem,1.5vh,1.2rem);" class="r">
+      <div class="contact-row">
+        <a href="mailto:design.yuchen@gmail.com" class="contact-item" style="text-decoration:none;cursor:pointer;transition:opacity .2s;" onmouseenter="this.style.opacity='.7'" onmouseleave="this.style.opacity='1'"><b>design.yuchen@gmail.com</b></a>
+        <a href="https://yuchenl.com" target="_blank" class="contact-item" style="text-decoration:none;cursor:pointer;transition:opacity .2s;" onmouseenter="this.style.opacity='.7'" onmouseleave="this.style.opacity='1'"><b>yuchenl.com</b></a>
+        <a href="https://linkedin.com/in/yuchen425" target="_blank" class="contact-item" style="text-decoration:none;cursor:pointer;transition:opacity .2s;" onmouseenter="this.style.opacity='.7'" onmouseleave="this.style.opacity='1'"><b>linkedin.com/in/yuchen425</b></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     INLINE EDIT
+══════════════════════════════════════════ -->
+<div id="editHotzone" style="position:fixed;top:0;left:0;width:80px;height:80px;z-index:10000;"></div>
+<button id="editToggle" title="Edit mode (E)" style="position:fixed;top:1rem;left:1rem;z-index:10001;background:var(--accent);color:white;border:none;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;padding:6px 13px;border-radius:2px;opacity:0;pointer-events:none;transition:opacity .3s;cursor:pointer;">✏ Edit</button>
+
+<script>
+/* =============================================
+   IMAGE SWITCHER — Slide 17
+   ============================================= */
+function switchView(key) {
+  const views = ['machine','direct','modes','template'];
+  views.forEach(v => {
+    document.getElementById('view-'+v).style.opacity = v === key ? '1' : '0';
+    const btn = document.getElementById('btn-'+v);
+    if (btn) {
+      btn.style.background = v === key ? 'var(--accent)' : 'var(--bg)';
+      btn.style.color = v === key ? 'white' : 'var(--mid)';
+    }
+  });
+}
+
+/* =============================================
+   SLIDE PRESENTATION CONTROLLER
+   ============================================= */
+class SlidePresentation {
+  constructor() {
+    this.slides  = Array.from(document.querySelectorAll('.slide'));
+    this.dots    = Array.from(document.querySelectorAll('.dot-wrap[data-idx]'));
+    this.total   = this.slides.length;
+    this.current = 0;
+    this.locked  = false;
+
+    this.setupObserver();
+    this.setupKeyboard();
+    this.setupWheel();
+    this.setupTouch();
+    this.setupDots();
+    this.setupCursor();
+    this.setupEditing();
+    this.updateBar(0);
+  }
+
+  setupObserver() {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          this.current = parseInt(e.target.dataset.index);
+          this.updateBar(this.current);
+          this.updateDots(this.current);
+        }
+      });
+    }, { threshold: 0.5 });
+    this.slides.forEach(s => io.observe(s));
+  }
+
+  goTo(idx) {
+    if (idx < 0 || idx >= this.total || this.locked) return;
+    this.locked = true;
+    this.slides[idx].scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => this.locked = false, 900);
+  }
+
+  setupKeyboard() {
+    document.addEventListener('keydown', e => {
+      if (e.target.getAttribute && e.target.getAttribute('contenteditable')) return;
+      if (['ArrowDown','ArrowRight',' '].includes(e.key)) { e.preventDefault(); this.goTo(this.current+1); }
+      if (['ArrowUp','ArrowLeft'].includes(e.key))        { e.preventDefault(); this.goTo(this.current-1); }
+      if (e.key === 'e' || e.key === 'E') this.toggleEdit();
+    });
+  }
+
+  setupWheel() {
+    let t = null;
+    document.addEventListener('wheel', e => {
+      if (t) return; t = setTimeout(() => t = null, 900);
+      e.deltaY > 0 ? this.goTo(this.current+1) : this.goTo(this.current-1);
+    }, { passive: true });
+  }
+
+  setupTouch() {
+    let y0 = 0;
+    document.addEventListener('touchstart', e => y0 = e.touches[0].clientY, { passive: true });
+    document.addEventListener('touchend', e => {
+      const dy = e.changedTouches[0].clientY - y0;
+      if (Math.abs(dy) > 55) dy < 0 ? this.goTo(this.current+1) : this.goTo(this.current-1);
+    });
+  }
+
+  setupDots() {
+    this.dots.forEach(d => d.addEventListener('click', () => this.goTo(parseInt(d.dataset.idx))));
+  }
+
+  setupCursor() {
+    const c = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => { c.style.left = e.clientX+'px'; c.style.top = e.clientY+'px'; });
+    document.addEventListener('mouseover', e => {
+      c.classList.toggle('big', !!e.target.closest('.dot-wrap,.metric,.trust-cell,.tag,.phase,.big-stat,.exp-row,.kw-item,button,a'));
+    });
+  }
+
+  setupEditing() {
+    this.isEditing = false;
+    const hotzone = document.getElementById('editHotzone');
+    const toggle  = document.getElementById('editToggle');
+    let hideT = null;
+    const showBtn = () => { clearTimeout(hideT); toggle.style.opacity='1'; toggle.style.pointerEvents='auto'; };
+    const hideBtn = () => { hideT = setTimeout(() => { if(!this.isEditing){toggle.style.opacity='0';toggle.style.pointerEvents='none';} }, 400); };
+    hotzone.addEventListener('mouseenter', showBtn);
+    hotzone.addEventListener('mouseleave', hideBtn);
+    toggle.addEventListener('mouseenter', showBtn);
+    toggle.addEventListener('mouseleave', hideBtn);
+    toggle.addEventListener('click', () => this.toggleEdit());
+    hotzone.addEventListener('click', () => this.toggleEdit());
+  }
+
+  toggleEdit() {
+    this.isEditing = !this.isEditing;
+    const toggle = document.getElementById('editToggle');
+    const editables = 'h1,h2,h3,p,.body-text,.kw-item,.insight-text,.quote-block,.exp-co,.exp-role,.exp-kpi,.tc-h,.tc-b,.ph-t,.ph-d,.bs-label,.mono-label,.sec-title,.cell-h,.cell-b,.cell-h2,.cell-b2,.sk-title,.sk-body,.sk-title2,.sk-body2,.sk-title3,.sk-body3,.sk-title4,.sk-body4';
+    if (this.isEditing) {
+      document.querySelectorAll(editables).forEach(el => {
+        el.setAttribute('contenteditable','true');
+        el.style.outline = '1px dashed rgba(0,52,212,.3)';
+      });
+      toggle.textContent = '✓ Done'; toggle.style.background='#0A0A0A';
+      toggle.style.opacity='1'; toggle.style.pointerEvents='auto';
+    } else {
+      document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+        el.removeAttribute('contenteditable'); el.style.outline='';
+      });
+      toggle.textContent='✏ Edit'; toggle.style.background='var(--accent)';
+      toggle.style.opacity='0'; toggle.style.pointerEvents='none';
+    }
+  }
+
+  updateBar(idx)  { document.getElementById('bar').style.width = ((idx+1)/this.total*100)+'%'; }
+  updateDots(idx) { this.dots.forEach((d,i) => d.classList.toggle('active', i===idx)); }
+}
+
+new SlidePresentation();
+</script>
+</body>
+</html>
